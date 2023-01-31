@@ -6,12 +6,22 @@ const app = express();
 app.listen('3000')
 
 app.use(express.json())
-const costumers = []
+const custumers = []
 
 app.post('/account', (request, response)=>{
     const {cpf, name} = request.body
+
+    const validandoCPF = custumers.some(
+        (custumers)=> custumers.cpf === cpf
+    )
+
+    if(validandoCPF){
+        return response.status(400).json({error : "cpf existente"})
+    }
+
     const id = uuidv4();
-    costumers.push({
+    console.log(id);
+    custumers.push({
         cpf,
         name,
         id,

@@ -4,3 +4,4 @@
 - cadastrar usuario
 
 ## Regra de negocio
+- validação cpf
