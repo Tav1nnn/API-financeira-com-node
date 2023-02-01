@@ -8,14 +8,30 @@ app.listen('3000')
 app.use(express.json())
 const custumers = []
 
-app.post('/account', (request, response)=>{
-    const {cpf, name} = request.body
+function verificacaoCPF(request, response, next){
+    const {cpf} = request.headers
+    
+    const custumer = custumers.find(custumer => custumer.cpf === cpf)
 
+    if(!custumer){
+        return response.status(400).jsonp({error: "conta não existe"})
+    }
+
+    request.custumer = custumer
+
+    return next()
+}
+
+app.post('/account', (request, response)=>{
+
+    const {cpf, name} = request.body
+    
     const validandoCPF = custumers.some(
         (custumers)=> custumers.cpf === cpf
     )
 
     if(validandoCPF){
+        
         return response.status(400).json({error : "cpf existente"})
     }
 
@@ -27,14 +43,27 @@ app.post('/account', (request, response)=>{
         id,
         statement: []
     })
-
+    console.log(custumers);
     return response.status(201).send()
 })
 
-app.get("/statement/:cpf", (request, response)=>{
-    const {cpf} = request.params
-    
-    const custumer = custumers.find(custumer => custumer.cpf === cpf)
-
+app.get("/statement", verificacaoCPF, (request, response)=>{
+    const {custumer} = request
     return response.json(custumer.statement)
+})
+
+app.post('/deposit', verificacaoCPF, (request, response)=>{
+    const {description, amount} = request.body
+    const {custumer} = request
+
+    const operacao = {
+        description,
+        amount,
+        date: new Date(),
+        type: 'credit'
+    }
+
+    custumer.statement.push(operacao)
+    
+    return response.status(201).send()
 })
